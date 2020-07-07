@@ -1,0 +1,76 @@
+test:
+  hostport: httpbin.org:80
+#  hostport: localhost:5000
+  uri: http://${test.hostport}
+
+spring:
+  application:
+      name: juejin-gateway
+  cloud:
+    gateway:
+      default-filters:
+      - AddResponseHeader=X-Response-Default-Foo, Default-Bar
+
+      routes:
+      # =====================================
+      # to run server
+      # $ wscat --listen 9000
+      # to run client
+      # $ wscat --connect ws://localhost:8080/echo
+      - id: websocket_test
+        uri: ws://localhost:9000
+        order: 8000
+        predicates:
+        - Path=/echo
+        filters:
+        - AddRequestHeader=X-Request-Foo, Bar
+      # =====================================
+      - id: forward_sample
+#        uri: ${test.uri}
+        uri: forward:///globalfilters
+        order: 10000
+        predicates:
+        - Path=/globalfilters
+        filters:
+        - PrefixPath=/application/gateway
+      # =====================================
+      - id: default_path_to_httpbin
+#        uri: ${test.uri}
+        uri: http://127.0.0.1:8081
+        order: 10000
+        predicates:
+        - Path=/**
+        filters:
+        - RequestRateLimiter=10, 20, #{@principalNameKeyResolver}
+#         - Hystrix=myCommandName
+
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    leaseExpirationDurationInSeconds: 30
+  client:
+    serviceUrl:
+      defaultZone: http://eureka.didispace.com/eureka/
+    enabled: false
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.ipc.netty: DEBUG
+
+hystrix:
+  command:
+    default:
+      circuitBreaker:
+        forceOpen: true
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000
+
+
+#management:
+#  context-path: /admin
+#  port: 8081
