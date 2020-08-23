@@ -40,7 +40,7 @@ import static org.springframework.util.StringUtils.tokenizeToStringArray;
 public class FilterDefinition {
 
     /**
-     * 过滤器定义名字
+     * 过滤器定义名字,符合特定的命名规范，为对应的工厂名前缀
      */
 	@NotNull
 	private String name;

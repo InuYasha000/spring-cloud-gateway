@@ -35,12 +35,14 @@ import static org.springframework.util.StringUtils.tokenizeToStringArray;
 
 /**
  * 路由定义
+ * 该组件用来对 Route 信息进行定义，最终会被 RouteLocator 解析成 Route。
  *
  * @author Spencer Gibb
  */
 @Validated
 public class RouteDefinition {
 
+	// 定义 Route 的 id，默认使用 UUID。
 	@NotEmpty
 	private String id = UUID.randomUUID().toString();
     /**

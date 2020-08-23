@@ -57,6 +57,8 @@ class GatewayRedisAutoConfiguration {
 				serializationContext);
 	}
 
+	//初始化 RedisRateLimiter
+	//RequestRateLimiterGatewayFilterFactory 基于 RedisRateLimiter 实现网关的限流功能
 	@Bean
 	public RedisRateLimiter redisRateLimiter(ReactiveRedisTemplate<String, String> redisTemplate,
 											 @Qualifier("redisRequestRateLimiterScript") RedisScript<List<Long>> redisScript) {

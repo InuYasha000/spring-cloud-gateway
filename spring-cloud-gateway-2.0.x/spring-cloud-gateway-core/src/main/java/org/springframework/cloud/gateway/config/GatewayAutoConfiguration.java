@@ -73,7 +73,9 @@ public class GatewayAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnClass(HttpClient.class)
+	//Netty 配置类
 	protected static class NettyConfiguration {
+		//该 HttpClient 使用 Netty 实现的 Client
 		@Bean // 1.2
 		@ConditionalOnMissingBean
 		public HttpClient httpClient(@Qualifier("nettyClientOptions") Consumer<? super HttpClientOptions.Builder> options) {
@@ -83,20 +85,21 @@ public class GatewayAutoConfiguration {
 		@Bean // 1.1
 		public Consumer<? super HttpClientOptions.Builder> nettyClientOptions() {
 			return opts -> {
+				//创建 name 属性为 "proxy" 的 reactor.ipc.netty.resources.PoolResources 。其中 "proxy" 用于实际使用时，打印日志的标记
 				opts.poolResources(PoolResources.elastic("proxy"));
 				// opts.disablePool(); //TODO: why do I need this again?
 			};
 		}
 
-//		@Bean // 1.3
-//		public NettyRoutingFilter routingFilter(HttpClient httpClient) {
-//			return new NettyRoutingFilter(httpClient);
-//		}
-//
-//		@Bean // 1.4
-//		public NettyWriteResponseFilter nettyWriteResponseFilter() {
-//			return new NettyWriteResponseFilter();
-//		}
+		@Bean // 1.3
+		public NettyRoutingFilter routingFilter(HttpClient httpClient) {
+			return new NettyRoutingFilter(httpClient);
+		}
+
+		@Bean // 1.4
+		public NettyWriteResponseFilter nettyWriteResponseFilter() {
+			return new NettyWriteResponseFilter();
+		}
 
 		@Bean // 1.5 {@link org.springframework.cloud.gateway.filter.WebsocketRoutingFilter}
 		public ReactorNettyWebSocketClient reactorNettyWebSocketClient(@Qualifier("nettyClientOptions") Consumer<? super HttpClientOptions.Builder> options) {
@@ -130,13 +133,14 @@ public class GatewayAutoConfiguration {
 		return new RouteDefinitionRouteLocator(routeDefinitionLocator, predicates, GatewayFilters, properties);
 	}
 
+	//RoutePredicateHandlerMapping 使用 CachingRouteLocator 来获取 Route 信息。在 Spring Cloud Gateway 启动后，如果有新加入的服务，则需要刷新 CachingRouteLocator 缓存。
 	@Bean // 4.5 // TODO 芋艿，where are you 【1】AdditionalRoutes 【2】customRouteLocator 【3】上面 routeDefinitionRouteLocator
 	@Primary
 	public RouteLocator routeLocator(List<RouteLocator> routeLocators) {
 		return new CachingRouteLocator(new CompositeRouteLocator(Flux.fromIterable(routeLocators)));
 	}
 
-	@Bean // 2.6
+	@Bean // 2.6Route
 	public FilteringWebHandler filteringWebHandler(List<GlobalFilter> globalFilters) {
 		return new FilteringWebHandler(globalFilters);
 	}

@@ -38,6 +38,7 @@ import static org.springframework.cloud.gateway.support.NameUtils.normalizePredi
  * TODO: developer configuration, in zuul, this was opt out, should be opt in
  * TODO: change to RouteLocator? use java dsl
  * @author Spencer Gibb
+ * 通过调用 {@link DiscoveryClient} 获取注册在注册中心的服务列表，生成对应的 RouteDefinition 数组
  */
 public class DiscoveryClientRouteDefinitionLocator implements RouteDefinitionLocator {
 
@@ -51,13 +52,13 @@ public class DiscoveryClientRouteDefinitionLocator implements RouteDefinitionLoc
 
 	@Override
 	public Flux<RouteDefinition> getRouteDefinitions() {
-		return Flux.fromIterable(discoveryClient.getServices())
-				.map(serviceId -> {
+		return Flux.fromIterable(discoveryClient.getServices())//调用 discoveryClient 获取注册在注册中心的服务列表。
+				.map(serviceId -> {//遍历服务列表，生成对应的 RouteDefinition 数组。
 					RouteDefinition routeDefinition = new RouteDefinition();
 					// 设置 ID
 					routeDefinition.setId(this.routeIdPrefix + serviceId);
 					// 设置 URI
-					routeDefinition.setUri(URI.create("lb://" + serviceId));
+					routeDefinition.setUri(URI.create("lb://" + serviceId));//lb://${serviceId},LoadBalancerClientFilter 会根据 lb:// 前缀过滤处理，负载均衡，选择最终调用的服务地址
 
 					// add a predicate that matches the url at /serviceId
 					/*PredicateDefinition barePredicate = new PredicateDefinition();

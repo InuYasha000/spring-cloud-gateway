@@ -50,18 +50,22 @@ import java.util.stream.Collectors;
  * {@link RouteLocator} that loads routes from a {@link RouteDefinitionLocator}
  * @author Spencer Gibb
  */
+//从 RouteDefinitionLocator 获取 RouteDefinition ，转换成 Route
 public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAware {
 	protected final Log logger = LogFactory.getLog(getClass());
 
+	//提供 RouteDefinition
 	private final RouteDefinitionLocator routeDefinitionLocator;
     /**
      * RoutePredicateFactory 映射
      * key ：{@link RoutePredicateFactory#name()}
+	 * RouteDefinition.predicates ---> Route.predicates
      */
 	private final Map<String, RoutePredicateFactory> predicates = new LinkedHashMap<>();
     /**
      * GatewayFilterFactory 映射
      * key ：{@link GatewayFilterFactory#name()}
+	 * RouteDefinition.filters --> Route.filters
      */
 	private final Map<String, GatewayFilterFactory> gatewayFilterFactories = new HashMap<>();
 	private final GatewayProperties gatewayProperties;
@@ -76,7 +80,7 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 	    this.routeDefinitionLocator = routeDefinitionLocator;
 		// 初始化 RoutePredicateFactory
 		initFactories(predicates);
-		// 初始化 RoutePredicateFactory
+		// 初始化 GatewayFilterFactory
 		gatewayFilterFactories.forEach(factory -> this.gatewayFilterFactories.put(factory.name(), factory));
 		// 设置 GatewayProperties
 		this.gatewayProperties = gatewayProperties;
@@ -121,8 +125,10 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 			}*/
 	}
 
+	//RouteDefinition => Route
 	private Route convertToRoute(RouteDefinition routeDefinition) {
 	    // 合并 Predicate
+		//将 RouteDefinition.predicates 数组合并成一个 java.util.function.Predicate ，这样 RoutePredicateHandlerMapping 为请求匹配 Route ，只要调用一次 Predicate#test(ServerWebExchange) 方法即可
 		Predicate<ServerWebExchange> predicate = combinePredicates(routeDefinition);
 		// 获得 GatewayFilter
 		List<GatewayFilter> gatewayFilters = getFilters(routeDefinition);
@@ -234,7 +240,9 @@ public class RouteDefinitionRouteLocator implements RouteLocator, BeanFactoryAwa
 		return filters;
 	}
 
+	//将 RouteDefinition.predicates 数组合并成一个 java.util.function.Predicate ，这样 RoutePredicateHandlerMapping 为请求匹配 Route ，只要调用一次 Predicate#test(ServerWebExchange) 方法即可
 	private Predicate<ServerWebExchange> combinePredicates(RouteDefinition routeDefinition) {
+		//这里拆成了两部分，第一部分寻找，第二部分拼接
 	    // 寻找 Predicate
 		List<PredicateDefinition> predicates = routeDefinition.getPredicates();
 		Predicate<ServerWebExchange> predicate = lookup(routeDefinition, predicates.get(0));

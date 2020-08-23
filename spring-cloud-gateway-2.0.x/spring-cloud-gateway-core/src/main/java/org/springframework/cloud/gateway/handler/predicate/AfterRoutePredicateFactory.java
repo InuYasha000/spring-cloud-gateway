@@ -28,6 +28,21 @@ import org.springframework.web.server.ServerWebExchange;
 /**
  * @author Spencer Gibb
  */
+/**
+ * spring:
+ *   cloud:
+ *     gateway:
+ *       routes:
+ *       - id: after_route
+ *         uri: http://example.org
+ *         predicates:
+ *         - After=2017-01-20T17:42:47.789-07:00[America/Denver] # ①
+ *
+ * PredicateDefinition {
+ *     name='After',
+ *     args={_genkey_0=2017-01-20T17:42:47.789-07:00[America/Denver]}
+ * }
+ */
 public class AfterRoutePredicateFactory implements RoutePredicateFactory {
 
 	public static final String DATETIME_KEY = "datetime";

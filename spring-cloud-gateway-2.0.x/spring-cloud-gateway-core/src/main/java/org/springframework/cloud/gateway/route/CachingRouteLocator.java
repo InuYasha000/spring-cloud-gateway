@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * @author Spencer Gibb
  */
+//缓存路由的 RouteLocator 实现类。RoutePredicateHandlerMapping 调用 CachingRouteLocator 的 RouteLocator#getRoutes() 方法，获取路由
 public class CachingRouteLocator implements RouteLocator {
 
 	private final RouteLocator delegate;
@@ -47,6 +48,7 @@ public class CachingRouteLocator implements RouteLocator {
 
 	/**
 	 * Sets the new routes
+	 * 刷新缓存 {@link cachedRoutes} 属性
 	 * @return old routes
 	 */
 	public Flux<Route> refresh() {
@@ -61,6 +63,7 @@ public class CachingRouteLocator implements RouteLocator {
 		return routes;
 	}
 
+	//GatewayWebfluxEndpoint 有一个 HTTP API 调用了 ApplicationEventPublisher ，发布 RefreshRoutesEvent 事件
 	@EventListener(RefreshRoutesEvent.class)
     /* for testing */ void handleRefresh() {
         refresh();

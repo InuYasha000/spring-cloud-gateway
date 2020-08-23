@@ -27,11 +27,13 @@ import java.util.function.Predicate;
 /**
  * @author Spencer Gibb
  */
-@FunctionalInterface
+//RoutePredicateFactory 是所有 predicate factory 的顶级接口，职责就是生产 Predicate
+@FunctionalInterface//函数接口
 public interface RoutePredicateFactory extends ArgumentHints {
 
     String PATTERN_KEY = "pattern";
 
+    //创建一个用于配置用途的对象（config），以其作为参数应用到 apply方法上来生产一个 Predicate 对象，再将 Predicate 对象包装成 AsyncPredicate。
 	Predicate<ServerWebExchange> apply(Tuple args);
 
 	default String name() {

@@ -38,6 +38,7 @@ import java.util.Map;
 
 /**
  * @author Spencer Gibb
+ * 提供管理网关的 HTTP API
  */
 @RestController
 @RequestMapping("${management.context-path:/application}/gateway")
@@ -88,6 +89,7 @@ public class GatewayWebfluxEndpoint implements ApplicationEventPublisherAware {
 	// TODO: Add uncommited or new but not active routes endpoint
 
 	//TODO: this should really be a listener that responds to a RefreshEvent
+	//发布 RefreshRoutesEvent 事件。CachingRouteLocator 监听到该事件，刷新缓存。
 	@PostMapping("/refresh")
 	public Mono<Void> refresh() {
 	    this.publisher.publishEvent(new RefreshRoutesEvent(this));
